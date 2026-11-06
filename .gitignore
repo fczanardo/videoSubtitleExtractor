@@ -1,2 +1,39 @@
-audio/
+# Bytecode e cache do Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.pyc
+
+# Ambientes virtuais
+.venv/
+venv/
+env/
+ENV/
+
+# Binários e executáveis locais
+.ffmpeg-bin/
+*.exe
+
+# Pastas de entrada e saída de processamento
 temp/
+audio/
+
+# Arquivos de mídia e saídas geradas
+*.mp3
+*.wav
+*.mp4
+*.mkv
+*.mov
+*.avi
+*.webm
+transcricao.txt
+
+# IDEs e sistema operacional
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Variáveis de ambiente
+.env
+.env.*
