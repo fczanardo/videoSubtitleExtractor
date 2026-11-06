@@ -40,6 +40,32 @@ run.bat --force
 
 ---
 
+## Transcription Model & API Keys
+
+### Does it require an API Key?
+**No API key is required.** The transcription is **100% free, offline, and runs locally** on your machine.
+- It does **not** call cloud APIs (such as OpenAI API, ChatGPT, Claude, or Gemini).
+- No account or credit card is needed.
+- Your audio files and transcripts never leave your computer.
+
+### How does it work?
+- The project uses **OpenAI Whisper** via the open-source library (`openai-whisper`).
+- On its first run, Whisper automatically downloads the neural network weights (~145 MB for the default `base` model) directly to your local user cache folder (`~/.cache/whisper`).
+- Subsequent runs use the cached weights offline and execute on your local hardware (CPU or GPU).
+
+### Available Whisper Models
+By default, [`transcribe.py`](transcribe.py) uses the `base` model (`whisper.load_model("base")`). You can change the model name in `transcribe.py` if you prefer higher accuracy or faster processing:
+
+| Model | Weights Size | Speed | Relative Accuracy | Recommended For |
+| :--- | :--- | :--- | :--- | :--- |
+| `tiny` | ~75 MB | ⚡ Fastest | Basic | Quick tests, fast turnaround |
+| **`base`** *(default)* | **~145 MB** | **🚀 Fast** | **Good** | **General purpose, balanced** |
+| `small` | ~480 MB | ⏱ Moderate | High | Good precision for Portuguese & multiple languages |
+| `medium` | ~1.5 GB | 🐢 Slower | Very High | Complex audio, varied accents, background noise |
+| `large` | ~3.0 GB | 🐌 Slowest | Maximum | Highest quality (best when running on NVIDIA GPU) |
+
+---
+
 ## Requirements
 
 - Python 3.10+
