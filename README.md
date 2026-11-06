@@ -1,61 +1,96 @@
 # UNITY Media Tools
 
-Simple batch audio extraction from videos using `ffmpeg`.
+Batch audio extraction from videos and automatic transcription using `ffmpeg` and OpenAI Whisper.
 
-## Current Project Structure
+## Project Structure
 
-- `audio_extract.py`: Scans `temp/` for video files and extracts audio to `audio/`.
-- `transcribe.py`: Transcribes audio files into text using OpenAI's Whisper model.
-- `temp/`: Input folder for videos.
-- `audio/`: Output folder for generated `.mp3` files.
+- `run.bat`: Automated one-click execution pipeline for Windows (activates `.venv`, extracts audio, and transcribes).
+- `audio_extract.py`: Scans `temp/` for video files and extracts audio into `audio/` as `.mp3`.
+- `transcribe.py`: Transcribes audio files from `audio/` into text files using Whisper (`base` model).
+- `temp/`: Input directory for video files.
+- `audio/`: Output directory for generated `.mp3` files and `*_TRANSCRICAO.txt` transcripts.
+
+---
+
+## Quick Start (Automated Pipeline with `run.bat`)
+
+The easiest way to run the entire pipeline on Windows is using `run.bat`. It automatically detects and activates `.venv`, extracts audio from videos in `temp/`, and transcribes them.
+
+### Option 1: Double-click (Windows Explorer)
+1. Place your video files (`.mp4`, `.mov`, `.mkv`, etc.) inside the `temp/` folder.
+2. Double-click `run.bat`.
+3. The script will:
+   - Activate the virtual environment (`.venv`) if available.
+   - Extract the audio of all videos from `temp/` to `audio/`.
+   - Transcribe the audio and save the output as `audio/<filename>_TRANSCRICAO.txt`.
+   - Keep the console window open at the end so you can inspect the output.
+
+### Option 2: Run via Terminal (Command Prompt / PowerShell)
+
+```bat
+:: Run the full automated pipeline (processes all videos in temp/ and transcribes the first available audio)
+run.bat
+
+:: Run the pipeline specifying a specific audio file to transcribe
+run.bat meu_video.mp3
+```
+
+---
 
 ## Requirements
 
 - Python 3.10+
-- `ffmpeg` available in PATH
+- `ffmpeg` available in PATH (or `imageio-ffmpeg` installed via requirements)
 
-You can verify `ffmpeg` with:
+---
 
-```bash
-ffmpeg -version
-```
+## Setup & Installation
 
-## Setup
-
-If you use a virtual environment:
+If configuring manually or setting up for the first time:
 
 ```bash
+# 1. Create a virtual environment
 python -m venv .venv
-# Windows PowerShell
+
+# 2. Activate the virtual environment
+# On Windows (PowerShell):
 .venv\Scripts\Activate.ps1
+# On Windows (Command Prompt):
+.venv\Scripts\activate.bat
+
+# 3. Install dependencies
 pip install -r requirements.txt
 ```
 
-## How To Use
+---
+
+## Manual Execution (Step-by-step)
+
+If you prefer to run the scripts individually instead of using `run.bat`:
 
 ### 1. Extract Audio from Videos
-1. Put your video files into `temp/`.
-2. Run the extraction script:
+Place your video files in `temp/` and run:
 
 ```bash
 python audio_extract.py
 ```
 
-3. Find generated `.mp3` files in `audio/`.
+Generated `.mp3` files will be saved in `audio/`. Existing audio files are skipped.
 
 ### 2. Transcribe Audio
-Use `transcribe.py` to generate text transcripts from audio files using Whisper.
+Transcribe audio files using OpenAI Whisper:
 
 ```bash
-# Default usage (reads "audio.mp3", outputs to "transcricao.txt")
+# Transcribes the first .mp3 found in audio/
 python transcribe.py
 
-# Specify an input audio file
-python transcribe.py audio/my_clip.mp3
-
-# Specify input audio and output text file
-python transcribe.py audio/my_clip.mp3 --out transcript.txt
+# Transcribes a specific audio file inside audio/
+python transcribe.py meu_video.mp3
 ```
+
+The resulting transcript will be saved in `audio/<audio_name>_TRANSCRICAO.txt`.
+
+---
 
 ## Supported Video Extensions
 
@@ -65,10 +100,3 @@ python transcribe.py audio/my_clip.mp3 --out transcript.txt
 - `.avi`
 - `.m4v`
 - `.webm`
-
-## Behavior Notes
-
-- Output files are named using the video filename stem (example: `clip.mp4` -> `clip.mp3`).
-- If an output file already exists, it is skipped.
-- If no videos are found in `temp/`, the script exits cleanly.
-- Pressing `Ctrl+C` interrupts processing safely.
