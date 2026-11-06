@@ -3,3 +3,4 @@ openai-whisper
 SpeechRecognition 
 pydub
 whisper
+python-dotenv

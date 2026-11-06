@@ -5,10 +5,13 @@ Batch audio extraction from videos and automatic transcription using `ffmpeg` an
 ## Project Structure
 
 - `run.bat`: Automated one-click execution pipeline for Windows (activates `.venv`, extracts audio, and transcribes all pending files).
+- `config.py`: Centralized configuration module that loads settings from `.env` with fallback defaults.
 - `audio_extract.py`: Scans `temp/` for video files and extracts audio into `audio/` as `.mp3`.
-- `transcribe.py`: Transcribes audio files from `audio/` into text files using Whisper (`base` model).
-- `temp/`: Input directory for video files.
-- `audio/`: Output directory for generated `.mp3` files and `*_TRANSCRICAO.txt` transcripts.
+- `transcribe.py`: Transcribes audio files from `audio/` into text files using Whisper.
+- `.env`: Local configuration file (git-ignored).
+- `.envexample`: Template with default configuration values.
+- `temp/`: Input directory for video files (created automatically if missing).
+- `audio/`: Output directory for generated `.mp3` files and transcripts (created automatically if missing).
 
 ---
 
@@ -40,6 +43,46 @@ run.bat --force
 
 ---
 
+## Environment Configuration (`.env` & `.envexample`)
+
+All hardcoded settings are now migrated to environment variables and loaded automatically from a local `.env` file via `config.py`.
+
+A template named [`.envexample`](.envexample) (and `.env.example`) is provided in the repository.
+
+### Initial Configuration
+
+To customize your configuration, copy `.envexample` to `.env`:
+
+```bash
+# On Windows Command Prompt:
+copy .envexample .env
+
+# On PowerShell:
+Copy-Item .envexample .env
+```
+
+### Configuration Variables
+
+| Variable | Default Value | Description |
+| :--- | :--- | :--- |
+| `TEMP_DIR` | `temp` | Path to the directory where input video files are located. |
+| `AUDIO_DIR` | `audio` | Path to the directory where extracted `.mp3` files and transcripts are saved. |
+| `VIDEO_EXTENSIONS` | `.mp4,.mov,.mkv,.avi,.m4v,.webm` | Comma-separated list of video extensions to scan and process. |
+| `AUDIO_CODEC` | `libmp3lame` | Audio codec used by `ffmpeg` for extraction. |
+| `AUDIO_BITRATE` | `96k` | Audio bitrate for extracted `.mp3` files. |
+| `AUDIO_SAMPLE_RATE` | `16000` | Audio sampling frequency (Hz), optimized for Whisper (16 kHz). |
+| `AUDIO_CHANNELS` | `1` | Number of audio channels (1 = mono, ideal for speech recognition). |
+| `WHISPER_MODEL` | `base` | Whisper model to use (`tiny`, `base`, `small`, `medium`, `large`). |
+| `WHISPER_LANGUAGE` | *(empty)* | Audio language code (e.g., `pt`, `en`). Leave empty for automatic detection. |
+| `WHISPER_FP16` | `False` | Whether to use FP16 half-precision (`True` for GPU, `False` for CPU). |
+| `WHISPER_VERBOSE` | `True` | Display real-time transcription segments in the console (`True`/`False`). |
+| `TRANSCRIPT_SUFFIX` | `_TRANSCRICAO.txt` | Suffix for the generated transcript text files. |
+
+> **Note on `temp/` and `audio/` folders:**
+> If the `temp/` or `audio/` folders do not exist, they are **automatically created** upon execution. If `temp/` is empty, the scripts notify you and exit cleanly without errors.
+
+---
+
 ## Transcription Model & API Keys
 
 ### Does it require an API Key?
@@ -54,7 +97,7 @@ run.bat --force
 - Subsequent runs use the cached weights offline and execute on your local hardware (CPU or GPU).
 
 ### Available Whisper Models
-By default, [`transcribe.py`](transcribe.py) uses the `base` model (`whisper.load_model("base")`). You can change the model name in `transcribe.py` if you prefer higher accuracy or faster processing:
+By default, the `base` model is used (`WHISPER_MODEL=base` in `.env`). You can change the model directly in `.env` or pass the `--model` argument:
 
 | Model | Weights Size | Speed | Relative Accuracy | Recommended For |
 | :--- | :--- | :--- | :--- | :--- |
@@ -89,6 +132,9 @@ python -m venv .venv
 
 # 3. Install dependencies
 pip install -r requirements.txt
+
+# 4. Copy environment configuration
+copy .envexample .env
 ```
 
 ---
@@ -116,19 +162,11 @@ python transcribe.py
 # Transcribes a specific audio file inside audio/
 python transcribe.py meu_video.mp3
 
-# Force re-transcription even if _TRANSCRICAO.txt already exists
+# Use a specific model on the fly
+python transcribe.py --model small
+
+# Force re-transcription even if transcript already exists
 python transcribe.py --force
 ```
 
 The resulting transcript will be saved in `audio/<audio_name>_TRANSCRICAO.txt`.
-
----
-
-## Supported Video Extensions
-
-- `.mp4`
-- `.mov`
-- `.mkv`
-- `.avi`
-- `.m4v`
-- `.webm`

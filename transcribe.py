@@ -5,7 +5,16 @@ import sys
 from pathlib import Path
 import whisper
 
-BASE_DIR = Path(__file__).resolve().parent
+from config import (
+    BASE_DIR,
+    TEMP_DIR,
+    AUDIO_DIR,
+    WHISPER_MODEL,
+    WHISPER_LANGUAGE,
+    WHISPER_FP16,
+    WHISPER_VERBOSE,
+    TRANSCRIPT_SUFFIX,
+)
 
 def ensure_ffmpeg_available() -> None:
     if shutil.which("ffmpeg") is not None:
@@ -39,7 +48,17 @@ parser = argparse.ArgumentParser(description="Transcribe audio file(s) with Whis
 parser.add_argument(
     "audio",
     nargs="?",
-    help="Optional input audio filename (inside the 'audio' directory). If not provided, transcribes all pending .mp3 files.",
+    help="Optional input audio filename (inside the audio directory). If not provided, transcribes all pending .mp3 files.",
+)
+parser.add_argument(
+    "--model",
+    default=WHISPER_MODEL,
+    help=f"Whisper model to use (default: {WHISPER_MODEL}). Options: tiny, base, small, medium, large.",
+)
+parser.add_argument(
+    "--lang",
+    default=WHISPER_LANGUAGE,
+    help=f"Language code (e.g., pt, en). Default from .env: '{WHISPER_LANGUAGE or 'auto'}'.",
 )
 parser.add_argument(
     "--force",
@@ -48,25 +67,26 @@ parser.add_argument(
 )
 args = parser.parse_args()
 
-audio_dir = BASE_DIR / "audio"
-audio_dir.mkdir(exist_ok=True)
+selected_model = args.model or WHISPER_MODEL
+selected_lang = args.lang or WHISPER_LANGUAGE
 
 if args.audio:
-    target_path = audio_dir / Path(args.audio).name
+    target_path = AUDIO_DIR / Path(args.audio).name
     if not target_path.exists():
         print(f"Audio file not found: {target_path.resolve()}")
         sys.exit(1)
     target_files = [target_path]
 else:
-    target_files = sorted(audio_dir.glob("*.mp3"))
+    target_files = sorted(AUDIO_DIR.glob("*.mp3"))
     if not target_files:
-        print(f"No audio files (.mp3) found in '{audio_dir}'.")
+        print(f"No audio files (.mp3) found in '{AUDIO_DIR}'.")
+        print(f"If you have videos in '{TEMP_DIR}', extract audio first by running 'audio_extract.py' or 'run.bat'.")
         sys.exit(0)
 
 # Identify pending files
 pending_files = []
 for file in target_files:
-    output_path = audio_dir / f"{file.stem}_TRANSCRICAO.txt"
+    output_path = AUDIO_DIR / f"{file.stem}{TRANSCRIPT_SUFFIX}"
     if output_path.exists() and not args.force and not args.audio:
         print(f"Already transcribed, skipping: {file.name}")
         continue
@@ -78,13 +98,20 @@ if not pending_files:
 
 ensure_ffmpeg_available()
 
-print("Loading Whisper model (base)...")
-model = whisper.load_model("base")
+print(f"Loading Whisper model ({selected_model})...")
+model = whisper.load_model(selected_model)
 
 for audio_path, output_path in pending_files:
     print(f"\n--- Transcribing: {audio_path.name} ---")
     try:
-        result = model.transcribe(str(audio_path), fp16=False, verbose=True)
+        transcribe_kwargs = {
+            "fp16": WHISPER_FP16,
+            "verbose": WHISPER_VERBOSE,
+        }
+        if selected_lang:
+            transcribe_kwargs["language"] = selected_lang
+
+        result = model.transcribe(str(audio_path), **transcribe_kwargs)
     except KeyboardInterrupt:
         print("\nTranscription interrupted by user (Ctrl+C).")
         raise SystemExit(130)

@@ -4,13 +4,16 @@ import shutil
 import subprocess
 import sys
 
-BASE_DIR = Path(__file__).resolve().parent
-TEMP_DIR = BASE_DIR / "temp"
-OUTPUT_DIR = BASE_DIR / "audio"
-TEMP_DIR.mkdir(exist_ok=True)
-OUTPUT_DIR.mkdir(exist_ok=True)
-
-VIDEO_EXTENSIONS = {".mp4", ".mov", ".mkv", ".avi", ".m4v", ".webm"}
+from config import (
+	BASE_DIR,
+	TEMP_DIR,
+	AUDIO_DIR,
+	VIDEO_EXTENSIONS,
+	AUDIO_CODEC,
+	AUDIO_BITRATE,
+	AUDIO_SAMPLE_RATE,
+	AUDIO_CHANNELS,
+)
 
 def ensure_ffmpeg_available() -> str:
 	if shutil.which("ffmpeg") is not None:
@@ -41,12 +44,13 @@ videos = sorted(
 
 if not videos:
 	print(f"No videos found in: {TEMP_DIR}")
+	print(f"Please place video files ({', '.join(sorted(VIDEO_EXTENSIONS))}) in '{TEMP_DIR}'.")
 	sys.exit(0)
 
 ffmpeg_bin = ensure_ffmpeg_available()
 
 for video_path in videos:
-	audio_path = OUTPUT_DIR / f"{video_path.stem}.mp3"
+	audio_path = AUDIO_DIR / f"{video_path.stem}.mp3"
 
 	if audio_path.exists():
 		print(f"Already exists, skipping: {audio_path.name}")
@@ -54,7 +58,7 @@ for video_path in videos:
 
 	print(f"Extracting audio: {video_path.name} -> {audio_path.name}")
 
-	# Use ffmpeg directly to improve speed and avoid MoviePy overhead.
+	# Use ffmpeg directly with configured parameters
 	cmd = [
 		ffmpeg_bin,
 		"-y",
@@ -62,13 +66,13 @@ for video_path in videos:
 		str(video_path),
 		"-vn",
 		"-ac",
-		"1",
+		AUDIO_CHANNELS,
 		"-ar",
-		"16000",
+		AUDIO_SAMPLE_RATE,
 		"-c:a",
-		"libmp3lame",
+		AUDIO_CODEC,
 		"-b:a",
-		"96k",
+		AUDIO_BITRATE,
 		str(audio_path),
 	]
 
