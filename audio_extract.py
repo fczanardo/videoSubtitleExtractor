@@ -1,4 +1,6 @@
 from pathlib import Path
+import os
+import shutil
 import subprocess
 import sys
 
@@ -10,6 +12,27 @@ OUTPUT_DIR.mkdir(exist_ok=True)
 
 VIDEO_EXTENSIONS = {".mp4", ".mov", ".mkv", ".avi", ".m4v", ".webm"}
 
+def ensure_ffmpeg_available() -> str:
+	if shutil.which("ffmpeg") is not None:
+		return "ffmpeg"
+
+	fallback_dir = BASE_DIR / ".ffmpeg-bin"
+	fallback_exe = fallback_dir / "ffmpeg.exe"
+	if fallback_exe.exists():
+		os.environ["PATH"] = f"{fallback_dir.resolve()}{os.pathsep}{os.environ.get('PATH', '')}"
+		return str(fallback_exe)
+
+	try:
+		import imageio_ffmpeg
+		bundled_exe = Path(imageio_ffmpeg.get_ffmpeg_exe())
+		fallback_dir.mkdir(exist_ok=True)
+		if not fallback_exe.exists():
+			shutil.copy2(bundled_exe, fallback_exe)
+		os.environ["PATH"] = f"{fallback_dir.resolve()}{os.pathsep}{os.environ.get('PATH', '')}"
+		return str(fallback_exe)
+	except Exception:
+		return "ffmpeg"
+
 videos = sorted(
 	video_path
 	for video_path in TEMP_DIR.iterdir()
@@ -19,6 +42,8 @@ videos = sorted(
 if not videos:
 	print(f"No videos found in: {TEMP_DIR}")
 	sys.exit(0)
+
+ffmpeg_bin = ensure_ffmpeg_available()
 
 for video_path in videos:
 	audio_path = OUTPUT_DIR / f"{video_path.stem}.mp3"
@@ -31,7 +56,7 @@ for video_path in videos:
 
 	# Use ffmpeg directly to improve speed and avoid MoviePy overhead.
 	cmd = [
-		"ffmpeg",
+		ffmpeg_bin,
 		"-y",
 		"-i",
 		str(video_path),
