@@ -87,7 +87,8 @@ else:
 pending_files = []
 for file in target_files:
     output_path = AUDIO_DIR / f"{file.stem}{TRANSCRIPT_SUFFIX}"
-    if output_path.exists() and not args.force and not args.audio:
+    legacy_path = AUDIO_DIR / f"{file.stem}_TRANSCRICAO.txt"
+    if (output_path.exists() or legacy_path.exists()) and not args.force and not args.audio:
         print(f"Already transcribed, skipping: {file.name}")
         continue
     pending_files.append((file, output_path))

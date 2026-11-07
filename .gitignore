@@ -1,24 +1,24 @@
-# Bytecode e cache do Python
+# Python bytecode and cache
 __pycache__/
 *.py[cod]
 *$py.class
 *.pyc
 
-# Ambientes virtuais
+# Virtual environments
 .venv/
 venv/
 env/
 ENV/
 
-# Binários e executáveis locais
+# Local binaries and executables
 .ffmpeg-bin/
 *.exe
 
-# Pastas de entrada e saída de processamento
+# Input and output processing directories
 temp/
 audio/
 
-# Arquivos de mídia e saídas geradas
+# Media files and generated outputs
 *.mp3
 *.wav
 *.mp4
@@ -26,15 +26,20 @@ audio/
 *.mov
 *.avi
 *.webm
+*.srt
+*.vtt
+*_TRANSCRIPTION.txt
+*_TRANSCRICAO.txt
+transcription.txt
 transcricao.txt
 
-# IDEs e sistema operacional
+# IDEs and operating system files
 .vscode/
 .idea/
 .DS_Store
 Thumbs.db
 
-# Variáveis de ambiente
+# Environment variables
 .env
 .env.*
 !.env.example

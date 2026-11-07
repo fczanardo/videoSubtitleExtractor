@@ -23,9 +23,10 @@ The easiest way to run the entire pipeline on Windows is using `run.bat`. It aut
 1. Place your video files (`.mp4`, `.mov`, `.mkv`, etc.) inside the `temp/` folder.
 2. Double-click `run.bat`.
 3. The script will:
+   - Create `.env` from `.envexample` if not already present.
    - Activate the virtual environment (`.venv`) if available.
    - Extract the audio of all videos from `temp/` to `audio/` (skips videos already extracted).
-   - Transcribe all pending `.mp3` files and save results as `audio/<filename>_TRANSCRICAO.txt` (skips already transcribed files).
+   - Transcribe all pending `.mp3` files and save results as `audio/<filename>_TRANSCRIPTION.txt` (skips already transcribed files).
    - Keep the console window open at the end so you can inspect the output.
 
 ### Option 2: Run via Terminal (Command Prompt / PowerShell)
@@ -35,7 +36,7 @@ The easiest way to run the entire pipeline on Windows is using `run.bat`. It aut
 run.bat
 
 :: Run the pipeline specifying a specific audio file to transcribe
-run.bat meu_video.mp3
+run.bat sample_video.mp3
 
 :: Force re-transcribing all files
 run.bat --force
@@ -45,9 +46,9 @@ run.bat --force
 
 ## Environment Configuration (`.env` & `.envexample`)
 
-All hardcoded settings are now migrated to environment variables and loaded automatically from a local `.env` file via `config.py`.
+All hardcoded settings are migrated to environment variables and loaded automatically from a local `.env` file via `config.py`.
 
-A template named [`.envexample`](.envexample) (and `.env.example`) is provided in the repository.
+Templates named [`.envexample`](.envexample) and [`.env.example`](.env.example) are provided in the repository.
 
 ### Initial Configuration
 
@@ -73,10 +74,10 @@ Copy-Item .envexample .env
 | `AUDIO_SAMPLE_RATE` | `16000` | Audio sampling frequency (Hz), optimized for Whisper (16 kHz). |
 | `AUDIO_CHANNELS` | `1` | Number of audio channels (1 = mono, ideal for speech recognition). |
 | `WHISPER_MODEL` | `base` | Whisper model to use (`tiny`, `base`, `small`, `medium`, `large`). |
-| `WHISPER_LANGUAGE` | *(empty)* | Audio language code (e.g., `pt`, `en`). Leave empty for automatic detection. |
+| `WHISPER_LANGUAGE` | *(empty)* | Spoken audio language code (e.g., `pt`, `en`). Leave empty for automatic detection. |
 | `WHISPER_FP16` | `False` | Whether to use FP16 half-precision (`True` for GPU, `False` for CPU). |
 | `WHISPER_VERBOSE` | `True` | Display real-time transcription segments in the console (`True`/`False`). |
-| `TRANSCRIPT_SUFFIX` | `_TRANSCRICAO.txt` | Suffix for the generated transcript text files. |
+| `TRANSCRIPT_SUFFIX` | `_TRANSCRIPTION.txt` | Suffix for the generated transcript text files. |
 
 > **Note on `temp/` and `audio/` folders:**
 > If the `temp/` or `audio/` folders do not exist, they are **automatically created** upon execution. If `temp/` is empty, the scripts notify you and exit cleanly without errors.
@@ -160,7 +161,7 @@ Transcribe audio files using OpenAI Whisper:
 python transcribe.py
 
 # Transcribes a specific audio file inside audio/
-python transcribe.py meu_video.mp3
+python transcribe.py sample_video.mp3
 
 # Use a specific model on the fly
 python transcribe.py --model small
@@ -169,4 +170,15 @@ python transcribe.py --model small
 python transcribe.py --force
 ```
 
-The resulting transcript will be saved in `audio/<audio_name>_TRANSCRICAO.txt`.
+The resulting transcript will be saved in `audio/<audio_name>_TRANSCRIPTION.txt`.
+
+---
+
+## Supported Video Extensions
+
+- `.mp4`
+- `.mov`
+- `.mkv`
+- `.avi`
+- `.m4v`
+- `.webm`

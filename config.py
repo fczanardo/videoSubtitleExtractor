@@ -4,7 +4,7 @@ import os
 BASE_DIR = Path(__file__).resolve().parent
 
 def load_env_file(env_path: Path = BASE_DIR / ".env") -> None:
-    """Carrega variáveis do arquivo .env com suporte nativo e fallback a python-dotenv."""
+    """Loads environment variables from .env file with native parsing and python-dotenv fallback."""
     try:
         from dotenv import load_dotenv
         load_dotenv(env_path)
@@ -34,11 +34,11 @@ def _get_dir(env_var: str, default_name: str) -> Path:
     path.mkdir(parents=True, exist_ok=True)
     return path
 
-# Diretórios
+# Directories
 TEMP_DIR = _get_dir("TEMP_DIR", "temp")
 AUDIO_DIR = _get_dir("AUDIO_DIR", "audio")
 
-# Configurações de Extração de Áudio (ffmpeg)
+# Audio Extraction Settings (ffmpeg)
 raw_extensions = os.getenv("VIDEO_EXTENSIONS", ".mp4,.mov,.mkv,.avi,.m4v,.webm")
 VIDEO_EXTENSIONS = {
     ext.strip().lower() if ext.strip().startswith(".") else f".{ext.strip().lower()}"
@@ -50,9 +50,9 @@ AUDIO_BITRATE = os.getenv("AUDIO_BITRATE", "96k")
 AUDIO_SAMPLE_RATE = os.getenv("AUDIO_SAMPLE_RATE", "16000")
 AUDIO_CHANNELS = os.getenv("AUDIO_CHANNELS", "1")
 
-# Configurações de Transcrição (Whisper)
+# Transcription Settings (Whisper)
 WHISPER_MODEL = os.getenv("WHISPER_MODEL", "base")
 WHISPER_LANGUAGE = os.getenv("WHISPER_LANGUAGE", "").strip() or None
 WHISPER_FP16 = os.getenv("WHISPER_FP16", "False").strip().lower() in ("true", "1", "yes")
 WHISPER_VERBOSE = os.getenv("WHISPER_VERBOSE", "True").strip().lower() in ("true", "1", "yes")
-TRANSCRIPT_SUFFIX = os.getenv("TRANSCRIPT_SUFFIX", "_TRANSCRICAO.txt")
+TRANSCRIPT_SUFFIX = os.getenv("TRANSCRIPT_SUFFIX", "_TRANSCRIPTION.txt")
